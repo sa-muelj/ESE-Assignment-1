@@ -1,0 +1,12 @@
+extends layout-register
+
+block content
+  h1 Register
+  br
+  form(action="/user/register", method="POST")
+    input(type="text", name="username", placeholder="Username", required)
+    input(type="password", name="password", placeholder="Password", required)
+    button(type="submit") Create User
+  br
+  if message
+    div.alert= message

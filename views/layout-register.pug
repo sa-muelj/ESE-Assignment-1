@@ -1,0 +1,16 @@
+doctype html
+html(lang="en")
+  head
+    title= title
+    link(rel="stylesheet", href="/css/styles.css")
+  body
+    header
+      h1 Blog with Express
+      nav.navbar
+        ul
+          li
+            a(href="/user/login") Login
+    main
+      h1= title
+      block content
+

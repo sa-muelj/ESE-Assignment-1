@@ -75,38 +75,7 @@ router.get("/stats", async (req, res) => {
   res.render("stats", { title: "Post Statistics", ...stats });
 });
 
-router.get('/search', async (req, res) => {  
-  const query = req.query.query;
 
-    // Debugging: Log the incoming query  
-    console.log('Received search query:', query);  
-    
-    try {  
-      let posts = [];  
-      if (query) {  
-        // Debugging: Log the query conditions  
-        console.log('Searching for posts with title matching:', `%${query}%`);  
-    
-        // Perform a case-insensitive search on the title  
-        posts = await BlogPost.findAll({  
-          where: {  
-            title: {  
-              [Op.like]: `%${query}%`, // Adjust for case sensitivity based on DB  
-            },  
-          },  
-        });  
-    
-        // Debugging: Log the results  
-        console.log('Found posts:', posts);  
-      }  
-      res.render('search', { title: 'Search Posts', posts, query, error: null });  
-    } catch (error) {  
-      // Debugging: Log the error details  
-      console.error('Error searching for posts:', error);  
-    
-      res.render('search', { title: 'Search Posts', posts: [], query, error: 'An error occurred while searching for posts. Please try again later.' });  
-    }  
-  });
 
 
 

@@ -1,6 +1,5 @@
 const express = require('express');
 const path = require('path');
-const { sequelize } = require('./models');
 const blogRoutes = require('./routes/blog');
 const authRouter = require('./routes/auth');
 const session = require('express-session');
@@ -58,11 +57,11 @@ app.use('/', blogRoutes);
 app.use('/user', authRouter);
 
 
-// Sync database and start server
-sequelize.sync().then(() => {
+// start server
+
   app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
   });
-});
+;
 
 module.exports = app;

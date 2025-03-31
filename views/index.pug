@@ -4,5 +4,8 @@ block content
   ul
     each post in posts
       li
-        a(href=`/post/${post.id}`) #{post.title} by #{post.author} (#{post.created_at.toLocaleDateString()})
+        a(href=`/post/${post.id}`) #{post.title} by #{post.author} (#{post.created_at})
+  br
+  if message
+    div.alert= message
 

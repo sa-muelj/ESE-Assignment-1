@@ -1,8 +1,9 @@
 const express = require('express');
 const authRouter = express.Router();
-const { User } = require('../models');
 const bcrypt = require('bcrypt');
 const session = require('express-session'); // required libraries
+require('dotenv').config();
+const fetch = require('node-fetch');
 
 authRouter.get('/register', async (req, res) => { // display register page
     res.render('register', { message: req.flash('message') });
@@ -48,21 +49,52 @@ authRouter.post('/register', async (req, res) => { // POST for registering a use
             const saltRounds = 10;
             bcrypt.hash(password, saltRounds).then(async (hashedPassword) => {   // Password encryption
                 try {
-                    const newUser = await User.create({ 
-                        username: req.body.username, 
-                        password: hashedPassword 
+                    const requestBody = {
+                        username: req.body.username,  // Replace with the actual username from the request
+                        hashedPassword: hashedPassword      // Replace with the hashed password
+                    };
+
+                    console.log(requestBody)
+                
+                    // Prepare the authorization token from the environment variables
+                    const authorizationToken = "Bearer " + process.env.SUPABASE_AUTHORIZATION_TOKEN;
+                    console.log(authorizationToken)
+                
+                    // Make the PUT request to the Supabase Edge Function
+                    const response = await fetch('https://bppgpbfiuhpwxvswayey.supabase.co/functions/v1/User', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': authorizationToken  // Add the authorization header
+                        },
+                        body: JSON.stringify(requestBody)  // Send the request body as a JSON string
                     });
+
+                    if (!response.ok) {
+                        // Read the response body as JSON
+                        const errorBody = await response.json();
+                        // Throw an error with both the status code
+                        throw new Error("Request failed with status: " + response.status);
+                    }
+                    
+                    // If the response is successful, process it further
+                    const responseBody = await response.json();
+                    console.log('Response Body:', responseBody);
+
+                    console.log(response)
                     console.log({
                         status: "SUCCESS",
                         message: "Account created successfully",
-                        data: newUser
+                        data: requestBody
                     });
                     req.flash('message', 'Account created successfully! Please log into the application');
                     res.redirect('/user/login');
                 } catch (err) {
                     console.log({
                         status: "FAILED",
-                        message: "An error occurred while creating user account"
+                        message: "An error occurred while creating user account",
+                        response: err
+
                     });
                     req.flash('message', 'An error occurred. Please try again');
                     res.redirect('/user/register');
@@ -88,60 +120,90 @@ authRouter.get('/login', (req, res) => {
   });
   
 
-authRouter.post('/login', async (req, res) => {    // POST to allow user to login
+  authRouter.post('/login', async (req, res) => {    // POST to allow user to login
     let { username, password } = req.body;
-  
+
     if (username == "" || password == "" || username == null || password == null) {        // Server side validation - empty fields
         console.log({
             status: "FAILED",
             message: "Empty fields"
-        })
+        });
         req.flash('message', 'Invalid username or password. Please try again!');
         return res.redirect('/user/login');
-    } else {                                       // Check if the user exists
-        const userFound = await User.findAll({     // Find user requested to compare to
-            where: {
-                username: req.body.username,
-            },
-        });
+    } else {
+        // Replace Sequelize query with a POST request to the /User endpoint
+        const requestBody = {
+            username: req.body.username,
+        };
 
-        if (userFound.length !== 0) {  
-            username = username.trim();
-            password = password.trim();                    // Remove trailing whitespaces            
-            const hashedPassword = userFound[0].password;
-            bcrypt.compare(password, hashedPassword).then((result) => {     // if user exists, compare hashedPassword to password given
-                if (result) {
-                    const sessionData = req.session;
-                    sessionData.username = username;    // Create session and assign username to session
-                    res.redirect('/');
-                    console.log({
-                        status: "SUCCESS",
-                        message: "Signin Successful",
-                        data: userFound,
-                        data2: sessionData
-                    });
-                } else {
+        try {
+            const response = await fetch('https://bppgpbfiuhpwxvswayey.supabase.co/functions/v1/User', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${process.env.SUPABASE_AUTHORIZATION_TOKEN}` // Make sure the token is correct
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                // Handle the case where the API request fails
+                console.log('Error fetching user data');
+                req.flash('message', 'Error occurred while checking user data');
+                return res.redirect('/user/login');
+            }
+
+            const userFound = await response.json();  // Parse the JSON response
+
+            if (userFound.length > 0) {  
+                username = username.trim();
+                password = password.trim();  // Remove trailing whitespaces
+
+                const hashedPassword = userFound[0].password; // Assuming the first element in the array is the user
+
+                // Compare passwords using bcrypt
+                bcrypt.compare(password, hashedPassword).then((result) => {  // If user exists, compare hashedPassword to password given
+                    if (result) {
+                        const sessionData = req.session;
+                        sessionData.username = username;  // Create session and assign username to session
+                        res.redirect('/');
+                        console.log({
+                            status: "SUCCESS",
+                            message: "Signin Successful",
+                            data: userFound,
+                            data2: sessionData
+                        });
+                    } else {
+                        console.log({
+                            status: "FAILED",
+                            message: "Invalid password entered"
+                        });
+                        req.flash('message', 'Invalid username or password. Please try again!');
+                        return res.redirect('/user/login');
+                    }
+                }).catch((err) => {
                     console.log({
                         status: "FAILED",
-                        message: "Invalid password entered"
-                    })
-                    req.flash('message', 'Invalid username or password. Please try again!');
+                        message: "An error occurred while comparing password"
+                    });
+                    req.flash('message', 'An error occurred. Please try again.');
                     return res.redirect('/user/login');
-                }
-            }).catch((err) => {
+                });
+            } else {
                 console.log({
                     status: "FAILED",
-                    message: "An error occurred while comparing password"
-                })
-                req.flash('message', 'An error occurred. Please try again.');
+                    message: "Invalid credentials"
+                });
+                req.flash('message', 'Invalid username or password. Please try again!');
                 return res.redirect('/user/login');
-            });
-        } else {
+            }
+
+        } catch (err) {
             console.log({
                 status: "FAILED",
-                message: "Invalid credentials"
-            })
-            req.flash('message', 'Invalid username or password. Please try again!');
+                message: "An error occurred while fetching user data"
+            });
+            req.flash('message', 'An error occurred. Please try again');
             return res.redirect('/user/login');
         }
     }

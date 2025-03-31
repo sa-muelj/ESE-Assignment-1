@@ -6,6 +6,6 @@ block content
     textarea(name="content", required)= post.content
     button(type="submit") Save Changes
 
-  form(action=`/delete/${post.id}`, method="POST")
+  form(action=`/delete/${post.id}`, method="GET")
     button(type="submit", class="danger") Delete Post
 

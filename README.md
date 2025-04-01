@@ -79,6 +79,30 @@ The application is hosted and deployed using Render.com, an easy to use and acce
 
 As aforementioned, the application also uses Supabase as a cloud database service. Similar to Render, after a week of inactivity on the project it will pause the project; whilst a slightly more intrusive process to start the database again, it is still simple and easy to do.
 
+---
+
+## Installation and Usage Requirements
+
+**Pre-requesites**
+
+This project uses NodeJS and associated libraries, Supabase and Render. You should have either access to GitHub Codespaces or VS Code installed on your computer, as well as accounts for Supabase and Render.
+
+**Setup Instructions**
+
+- Navigate to the Git Repository and clone it following standard procedures. 
+- Once cloned, open in your IDE of choice and run npm install in your bash terminal, which will install all necessary packages.
+- Create a .env file and place your Supabase Bearer Token in this file, with a Key: SUPABASE_AUTHORIZATION_TOKEN
+- Run npx supabase login - login with your Supabase credentials and follow the steps
+- Run npx supabase functions deploy and select your project in the terminal, this will deploy the edge functions in this repository to your Supabase project.
+- Change the URL found in API calls to your Supabase Project Reference
+- Navigate to Render.com, login to your account and follow the steps to create a new deployment
+
+**Commands**
+
+If testing locally, please use npm start in the terminal to start the application
+
+---
+
 ## Feature Overview
 
 **Authentication**

@@ -21,7 +21,7 @@ serve(async (req: Request) => {
         .eq("username", userReq.username);
 
       if (error) throw error;
-      console.log( "GET BlogPost succeeded", data);
+      console.log( "GET User from Username", data);
       return new Response(JSON.stringify(data), { headers });
     }
 
@@ -40,8 +40,7 @@ serve(async (req: Request) => {
       console.log(error);
       if (error) throw error;
       return new Response(
-        JSON.stringify({ success: true, message: "User created!", data }),
-        { headers }
+        JSON.stringify({ success: true, message: "User created!", username: newUser.username }),
       );
     }
 

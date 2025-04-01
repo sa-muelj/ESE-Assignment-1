@@ -24,17 +24,26 @@ authRouter.post('/register', async (req, res) => { // POST for registering a use
     } else if (password.length < 8) {              // password policy check
         console.log({
             status: "FAILED",
-            message: "Password is too short! A strong password should be at least 8 characters long"
+            message: "Password length is less than 8 characters"
         });
         req.flash('message', 'Password is too short! A strong password should be at least 8 characters long');
         return res.redirect('/user/register');
     } else {                                       // Check if the user already exists
         
-        const userFound = await User.findAll({     // sequelize WHERE query to retrieve usernames - unique field server side check
-            where: {
-                username: req.body.username,
+        const requestBody = {
+            username: req.body.username,  // Replace with the actual username from the request
+        };
+
+        const response = await fetch('https://bppgpbfiuhpwxvswayey.supabase.co/functions/v1/User', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + process.env.SUPABASE_AUTHORIZATION_TOKEN  // Add the authorization header
             },
+            body: JSON.stringify(requestBody)  // Send the request body as a JSON string
         });
+
+        const userFound = await response.json();  // Parse the JSON response
 
         if (userFound.length !== 0) {              // If a user already exists
             console.log({
@@ -53,12 +62,9 @@ authRouter.post('/register', async (req, res) => { // POST for registering a use
                         username: req.body.username,  // Replace with the actual username from the request
                         hashedPassword: hashedPassword      // Replace with the hashed password
                     };
-
-                    console.log(requestBody)
                 
                     // Prepare the authorization token from the environment variables
                     const authorizationToken = "Bearer " + process.env.SUPABASE_AUTHORIZATION_TOKEN;
-                    console.log(authorizationToken)
                 
                     // Make the PUT request to the Supabase Edge Function
                     const response = await fetch('https://bppgpbfiuhpwxvswayey.supabase.co/functions/v1/User', {
@@ -79,13 +85,10 @@ authRouter.post('/register', async (req, res) => { // POST for registering a use
                     
                     // If the response is successful, process it further
                     const responseBody = await response.json();
-                    console.log('Response Body:', responseBody);
-
-                    console.log(response)
                     console.log({
                         status: "SUCCESS",
                         message: "Account created successfully",
-                        data: requestBody
+                        username
                     });
                     req.flash('message', 'Account created successfully! Please log into the application');
                     res.redirect('/user/login');
@@ -170,8 +173,7 @@ authRouter.get('/login', (req, res) => {
                         console.log({
                             status: "SUCCESS",
                             message: "Signin Successful",
-                            data: userFound,
-                            data2: sessionData
+                            username
                         });
                     } else {
                         console.log({

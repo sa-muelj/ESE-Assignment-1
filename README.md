@@ -75,7 +75,7 @@ Across the entire technology stack, security is a key consideration.
 
 ## Deployment
 
-The application is hosted and deployed using Render.com, an easy to use and accessible deployment platform for various applications. Whilst the application spins down after ~10 minutes, it will easily start up within 50 seconds of the web page being loaded.
+The application is hosted and deployed using Render.com, an easy to use and accessible deployment platform for various applications. Whilst the application spins down after ~10 minutes, it will easily start up within 50 seconds of the web page being loaded. Render also offers a key feature that it will automatically deploy when there has been a push to the repository, creating strong CI/CD practices and a clear pipeline.
 
 As aforementioned, the application also uses Supabase as a cloud database service. Similar to Render, after a week of inactivity on the project it will pause the project; whilst a slightly more intrusive process to start the database again, it is still simple and easy to do.
 
